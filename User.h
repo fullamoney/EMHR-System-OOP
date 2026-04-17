@@ -17,14 +17,14 @@ class User {
 protected:
     std::string          userId;
     std::string          username;
-    std::string          passwordHash;   // SHA-256-like simple hash (demo)
+    std::string          passwordHash; 
     std::string          fullName;
     std::string          email;
     std::string          phone;
     bool                 isActive;
     std::vector<Role>    roles;
-    std::string          createdAt;      // ISO-8601 timestamp
-    std::string          lastModified;   // ISO-8601 timestamp
+    std::string          createdAt;    
+    std::string          lastModified;   
 
     // ----- Internal helpers -----
     static std::string   HashPassword(const std::string& password);
@@ -60,7 +60,7 @@ public:
     bool SetPhone(const std::string& phone);
     void SetIsActive(bool active);
     void SetLastModified(const std::string& ts);
-    void SetPasswordHash(const std::string& hash);   // for file loading
+    void SetPasswordHash(const std::string& hash);  
 
     // ----- Role / Permission Management -----
     void AddRole(const Role& role);
