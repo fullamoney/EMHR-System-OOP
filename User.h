@@ -4,7 +4,7 @@
  * Author  : IShmael Moulton
  * Date    : March 2026
  * Desc    : Abstract-like base class for all system users.
- *           Demonstrates encapsulation (private attrs, public accessors/mutators),
+ *           encapsulation (private attrs, public accessors/mutators),
  *           and serves as the base for inheritance (Admin extends User).
  */
 
