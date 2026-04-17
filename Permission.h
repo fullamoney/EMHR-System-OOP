@@ -12,8 +12,8 @@
 
 class Permission {
 private:
-    std::string permissionName;   // e.g. "createUser", "deleteUser"
-    std::string description;      // human-readable description
+    std::string permissionName;  
+    std::string description;    
 
 public:
     // ----- Constructors -----
@@ -25,7 +25,7 @@ public:
 
     // ----- Operators -----
     bool operator==(const Permission& other) const;
-    bool operator< (const Permission& other) const;   // for sorting / sets
+    bool operator< (const Permission& other) const;  
 
     // ----- Display -----
     void Display() const;
