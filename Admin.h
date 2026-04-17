@@ -15,7 +15,7 @@
 class Admin : public User {
 private:
     std::string department;
-    std::string adminLevel;   // "SuperAdmin", "DepartmentAdmin"
+    std::string adminLevel; 
 
 public:
     // ----- Constructors -----
