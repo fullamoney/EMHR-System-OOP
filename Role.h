@@ -14,7 +14,7 @@
 
 class Role {
 private:
-    std::string          roleName;     // "Admin", "Manager", "User"
+    std::string          roleName; 
     std::vector<Permission> permissions;
 
 public:
