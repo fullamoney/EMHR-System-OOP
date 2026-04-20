@@ -535,14 +535,12 @@ void triageMenu(TriageManager& triageManager, MetricsCounter& metrics) {
                 string note = getStr("  Triage Note                          : ");
 
                 // Vitals constructor: (bpS, bpD, hr, temp, spo2, rr, timestamp)
-                Vitals v(bpS, bpD, hr, temp, spo2, rr, arr);
+                TriageVitals v(bpS, bpD, hr, temp, spo2, rr, arr);
                 // TriageRecord constructor: (patientId, patientName, vitals, arrivalTime)
                 TriageRecord rec(pid, name, v, arr);
-                rec.responseTimeMinutes = resp;
-                rec.triageNote = note;
                 triageManager.addRecord(rec);
                 // recordTriageCase takes RiskLevel from riskScore
-                metrics.recordTriageCase(rec.riskScore.getLevel());
+                metrics.recordTriageCase(rec.getRiskScore().getLevel());
                 break;
             }
             case 2:
