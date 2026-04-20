@@ -16,25 +16,28 @@
 #include "FileManager.h"
 #include "Triage.h"
 
+using namespace std;
+
 // ============================================================
-// MetricsCounter — ENCAPSULATION of all system counters
-// Tracks important numerical activity in the system
+// MetricsCounter — CLASS
+// ENCAPSULATION: all counters are private
+// Tracks all numerical activity in the system
 // ============================================================
 class MetricsCounter {
 private:
-    int appointmentsBooked;
-    int appointmentsCancelled;
-    int appointmentsCompleted;
-    int appointmentsNoShow;
-    int schedulingConflicts;
-    int highRiskTriageCases;
-    int mediumRiskTriageCases;
-    int lowRiskTriageCases;
-    int notificationsSent;
-    int billingTransactions;
+    int    appointmentsBooked;
+    int    appointmentsCancelled;
+    int    appointmentsCompleted;
+    int    appointmentsNoShow;
+    int    schedulingConflicts;
+    int    highRiskTriageCases;
+    int    mediumRiskTriageCases;
+    int    lowRiskTriageCases;
+    int    notificationsSent;
+    int    billingTransactions;
     double totalRevenue;
 
-    const std::string METRICS_FILE = "metrics.txt";
+    const string METRICS_FILE = "metrics.txt";
 
 public:
     MetricsCounter()
@@ -47,7 +50,7 @@ public:
         loadFromFile();
     }
 
-    // ---- Mutators (increment counters) ----
+    // Mutators - increment counters with validation
     void recordAppointmentBooked()    { appointmentsBooked++;    saveToFile(); }
     void recordAppointmentCancelled() { appointmentsCancelled++; saveToFile(); }
     void recordAppointmentCompleted() { appointmentsCompleted++; saveToFile(); }
@@ -58,18 +61,22 @@ public:
     void recordTriageCase(RiskLevel level) {
         if      (level == RiskLevel::HIGH)   highRiskTriageCases++;
         else if (level == RiskLevel::MEDIUM) mediumRiskTriageCases++;
-        else                                  lowRiskTriageCases++;
+        else                                 lowRiskTriageCases++;
         saveToFile();
     }
 
     void recordBillingTransaction(double amount) {
+        if (amount < 0) return;
         billingTransactions++;
         totalRevenue += amount;
         saveToFile();
     }
 
-    // ---- Accessors ----
+    // Accessors
     int    getAppointmentsBooked()    const { return appointmentsBooked;    }
+    int    getAppointmentsCancelled() const { return appointmentsCancelled; }
+    int    getAppointmentsCompleted() const { return appointmentsCompleted; }
+    int    getAppointmentsNoShow()    const { return appointmentsNoShow;    }
     int    getSchedulingConflicts()   const { return schedulingConflicts;   }
     int    getHighRiskTriageCases()   const { return highRiskTriageCases;   }
     int    getMediumRiskTriageCases() const { return mediumRiskTriageCases; }
@@ -78,39 +85,37 @@ public:
     int    getBillingTransactions()   const { return billingTransactions;   }
     double getTotalRevenue()          const { return totalRevenue;          }
 
-    // ---- Display all counters ----
     void displayMetrics() const {
-        std::cout << "\n===== SYSTEM METRICS =====\n";
-        std::cout << std::left << std::setw(30) << "  Appointments Booked"
-                  << ": " << appointmentsBooked << "\n";
-        std::cout << std::setw(30) << "  Appointments Cancelled"
-                  << ": " << appointmentsCancelled << "\n";
-        std::cout << std::setw(30) << "  Appointments Completed"
-                  << ": " << appointmentsCompleted << "\n";
-        std::cout << std::setw(30) << "  No-Shows"
-                  << ": " << appointmentsNoShow << "\n";
-        std::cout << std::setw(30) << "  Scheduling Conflicts"
-                  << ": " << schedulingConflicts << "\n";
-        std::cout << std::setw(30) << "  High Risk Triage Cases"
-                  << ": " << highRiskTriageCases << "\n";
-        std::cout << std::setw(30) << "  Medium Risk Triage Cases"
-                  << ": " << mediumRiskTriageCases << "\n";
-        std::cout << std::setw(30) << "  Low Risk Triage Cases"
-                  << ": " << lowRiskTriageCases << "\n";
-        std::cout << std::setw(30) << "  Notifications Sent"
-                  << ": " << notificationsSent << "\n";
-        std::cout << std::setw(30) << "  Billing Transactions"
-                  << ": " << billingTransactions << "\n";
-        std::cout << std::fixed << std::setprecision(2);
-        std::cout << std::setw(30) << "  Total Revenue"
-                  << ": JMD " << totalRevenue << "\n";
-        std::cout << "==========================\n";
+        cout << "\n===== SYSTEM METRICS =====\n";
+        cout << left << setw(30) << "  Appointments Booked"
+             << ": " << appointmentsBooked    << "\n";
+        cout << setw(30) << "  Appointments Cancelled"
+             << ": " << appointmentsCancelled << "\n";
+        cout << setw(30) << "  Appointments Completed"
+             << ": " << appointmentsCompleted << "\n";
+        cout << setw(30) << "  No-Shows"
+             << ": " << appointmentsNoShow    << "\n";
+        cout << setw(30) << "  Scheduling Conflicts"
+             << ": " << schedulingConflicts   << "\n";
+        cout << setw(30) << "  High Risk Triage Cases"
+             << ": " << highRiskTriageCases   << "\n";
+        cout << setw(30) << "  Medium Risk Triage Cases"
+             << ": " << mediumRiskTriageCases << "\n";
+        cout << setw(30) << "  Low Risk Triage Cases"
+             << ": " << lowRiskTriageCases    << "\n";
+        cout << setw(30) << "  Notifications Sent"
+             << ": " << notificationsSent     << "\n";
+        cout << setw(30) << "  Billing Transactions"
+             << ": " << billingTransactions   << "\n";
+        cout << fixed << setprecision(2);
+        cout << setw(30) << "  Total Revenue"
+             << ": JMD " << totalRevenue      << "\n";
+        cout << "==========================\n";
     }
 
-    // ---- FILE PERSISTENCE ----
     void saveToFile() const {
-        std::ofstream file(METRICS_FILE);
-        if (!file.is_open()) { std::cerr << "[WARN] Cannot save metrics.\n"; return; }
+        ofstream file(METRICS_FILE);
+        if (!file.is_open()) { cerr << "[WARN] Cannot save metrics.\n"; return; }
         file << appointmentsBooked    << "\n"
              << appointmentsCancelled << "\n"
              << appointmentsCompleted << "\n"
@@ -126,7 +131,7 @@ public:
     }
 
     void loadFromFile() {
-        std::ifstream file(METRICS_FILE);
+        ifstream file(METRICS_FILE);
         if (!file.is_open()) return;
         file >> appointmentsBooked    >> appointmentsCancelled
              >> appointmentsCompleted >> appointmentsNoShow
@@ -139,9 +144,9 @@ public:
 };
 
 // ============================================================
-// ReportManager
+// ReportManager — CLASS
+// COMPOSITION: uses MetricsCounter, TriageManager, FileManager
 // Generates weekly summary reports to console and file
-// Uses MetricsCounter and TriageManager data
 // ============================================================
 class ReportManager {
 private:
@@ -149,37 +154,32 @@ private:
     TriageManager&  triageManager;
     FileManager&    fileManager;
 
-    const std::string REPORTS_DIR = "weekly_report_";
-
-    std::string getWeekLabel() const {
-        std::time_t now = std::time(nullptr);
-        std::tm* t = std::localtime(&now);
-        std::ostringstream oss;
-        oss << std::put_time(t, "%Y-W%U");  // e.g. 2026-W15
+    string getWeekLabel() const {
+        time_t now = time(nullptr);
+        tm* t = localtime(&now);
+        ostringstream oss;
+        oss << put_time(t, "%Y-W%U");
         return oss.str();
     }
 
-    std::string getCurrentDateTime() const {
-        std::time_t now = std::time(nullptr);
-        std::tm* t = std::localtime(&now);
-        std::ostringstream oss;
-        oss << std::put_time(t, "%Y-%m-%dT%H:%M:%S");
+    string getCurrentDateTime() const {
+        time_t now = time(nullptr);
+        tm* t = localtime(&now);
+        ostringstream oss;
+        oss << put_time(t, "%Y-%m-%dT%H:%M:%S");
         return oss.str();
     }
 
 public:
-    // COMPOSITION: ReportManager uses Metrics, Triage, and File references
     ReportManager(MetricsCounter& m, TriageManager& tm, FileManager& fm)
         : metrics(m), triageManager(tm), fileManager(fm) {}
 
-    // ---- Generate weekly summary report ----
     void generateWeeklyReport() const {
-        std::string week     = getWeekLabel();
-        std::string filename = REPORTS_DIR + week + ".txt";
-        std::string now      = getCurrentDateTime();
+        string week     = getWeekLabel();
+        string filename = "weekly_report_" + week + ".txt";
+        string now      = getCurrentDateTime();
 
-        // Build report lines
-        std::ostringstream report;
+        ostringstream report;
         report << "=======================================================\n";
         report << "   EASTERN MEDICAL HEALTH REGION (EMHR)\n";
         report << "   WEEKLY SUMMARY REPORT\n";
@@ -188,8 +188,8 @@ public:
         report << "=======================================================\n\n";
 
         report << "--- APPOINTMENTS ---\n";
-        report << "  Booked               : " << metrics.getAppointmentsBooked()    << "\n";
-        report << "  Scheduling Conflicts : " << metrics.getSchedulingConflicts()   << "\n\n";
+        report << "  Booked               : " << metrics.getAppointmentsBooked()  << "\n";
+        report << "  Scheduling Conflicts : " << metrics.getSchedulingConflicts() << "\n\n";
 
         report << "--- TRIAGE ---\n";
         report << "  High Risk Cases      : " << metrics.getHighRiskTriageCases()   << "\n";
@@ -198,20 +198,19 @@ public:
         report << "  Total Triage Records : " << triageManager.totalRecords()       << "\n\n";
 
         report << "--- NOTIFICATIONS ---\n";
-        report << "  Notifications Sent   : " << metrics.getNotificationsSent()     << "\n\n";
+        report << "  Notifications Sent   : " << metrics.getNotificationsSent()    << "\n\n";
 
         report << "--- BILLING ---\n";
-        report << "  Transactions         : " << metrics.getBillingTransactions()   << "\n";
-        report << std::fixed << std::setprecision(2);
-        report << "  Total Revenue (JMD)  : " << metrics.getTotalRevenue()          << "\n\n";
+        report << "  Transactions         : " << metrics.getBillingTransactions()  << "\n";
+        report << fixed << setprecision(2);
+        report << "  Total Revenue (JMD)  : " << metrics.getTotalRevenue()         << "\n\n";
 
-        // Triage efficiency analysis
-        report << "--- TRIAGE EFFICIENCY SUMMARY ---\n";
         int highRisk = metrics.getHighRiskTriageCases();
         int total    = triageManager.totalRecords();
+        report << "--- TRIAGE EFFICIENCY SUMMARY ---\n";
         if (total > 0) {
             double highRiskPct = (double)highRisk / total * 100.0;
-            report << std::fixed << std::setprecision(1);
+            report << fixed << setprecision(1);
             report << "  High Risk %          : " << highRiskPct << "%\n";
             if (highRiskPct > 30)
                 report << "  Alert: High-risk rate above 30% - escalate staffing review.\n";
@@ -221,13 +220,12 @@ public:
             report << "  No triage records for this period.\n";
         }
 
-        // Conflict rate
         int booked    = metrics.getAppointmentsBooked();
         int conflicts = metrics.getSchedulingConflicts();
         if (booked > 0) {
             double conflictRate = (double)conflicts / booked * 100.0;
             report << "\n--- SCHEDULING CONFLICT RATE ---\n";
-            report << std::fixed << std::setprecision(1);
+            report << fixed << setprecision(1);
             report << "  Conflict Rate        : " << conflictRate << "%\n";
             if (conflictRate > 5.0)
                 report << "  Alert: Conflict rate > 5% - review scheduling rules.\n";
@@ -237,34 +235,33 @@ public:
         report << "             END OF REPORT\n";
         report << "=======================================================\n";
 
-        std::string reportStr = report.str();
+        string reportStr = report.str();
+        cout << reportStr;
 
-        // Print to console
-        std::cout << reportStr;
-
-        // Save to file (FILE PERSISTENCE)
-        std::ofstream file(filename);
+        ofstream file(filename);
         if (file.is_open()) {
             file << reportStr;
             file.close();
-            std::cout << "\n[REPORT] Saved to: " << filename << "\n";
+            cout << "\n[REPORT] Saved to: " << filename << "\n";
         } else {
-            std::cerr << "[ERROR] Could not save report to file.\n";
+            cerr << "[ERROR] Could not save report to file.\n";
         }
 
-        // Append to cumulative reports log
-        std::ofstream logFile("all_reports.txt", std::ios::app);
+        ofstream logFile("all_reports.txt", ios::app);
         if (logFile.is_open()) {
             logFile << reportStr << "\n\n";
             logFile.close();
         }
     }
 
-    // ---- Display just the metrics dashboard ----
     void displayDashboard() const {
         metrics.displayMetrics();
         triageManager.analyzeResponseTimes();
     }
+};
+
+#endif // REPORT_MANAGER_H
+
 };
 
 #endif // REPORT_MANAGER_H
