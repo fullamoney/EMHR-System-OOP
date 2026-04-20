@@ -1,7 +1,7 @@
 // ============================================================
 // File: FileManager.h
 // Description: File persistence for Patients, Appointments,
-//              EHR records, and Billing (Repository pattern)
+//              EHR, and Billing (Repository pattern)
 // Project: EMHR Healthcare System - Semester 2 AY2025/2026
 // ============================================================
 
@@ -15,82 +15,215 @@
 #include <iostream>
 #include <stdexcept>
 
-// ============================================================
-// Simple data structs for persistence
-// (Your existing classes likely have these — adapt as needed)
-// ============================================================
-
-struct PatientRecord {
-    std::string patientId;
-    std::string firstName;
-    std::string lastName;
-    std::string dateOfBirth;      // ISO-8601
-    std::string gender;
-    std::string address;
-    std::string phone;
-    std::string email;
-    std::string nextOfKinName;
-    std::string nextOfKinPhone;
-    std::string createdAt;        // ISO-8601
-};
-
-struct AppointmentRecord {
-    std::string appointmentId;
-    std::string patientId;
-    std::string staffId;
-    std::string scheduledAt;      // ISO-8601
-    std::string status;           // SCHEDULED|CANCELLED|COMPLETED|NO_SHOW
-    std::string purpose;
-    bool        conflictFlagged;
-};
-
-struct BillingRecord {
-    std::string billingId;
-    std::string patientId;
-    std::string appointmentId;
-    double      totalAmount;
-    double      insuranceCoverage; // e.g. 80%
-    double      deductible;
-    double      patientPays;
-    std::string paymentMethod;     // CASH|CARD|INSURANCE|COMBO
-    std::string status;            // PENDING|PAID|PARTIAL
-    std::string billedAt;          // ISO-8601
-};
-
-struct EHRRecord {
-    std::string ehrId;
-    std::string patientId;
-    std::string visitDate;         // ISO-8601
-    std::string diagnosis;
-    std::string prescription;
-    std::string allergies;
-    std::string immunizations;
-    std::string labResultsSummary;
-    std::string purposeOfProcessing;
-    std::string recordedBy;        // staffId
-};
+using namespace std;
 
 // ============================================================
-// FileManager — Repository pattern
+// PatientRecord — CLASS (not struct)
+// ENCAPSULATION: private attributes with accessors/mutators
+// Used by FileManager as a persistence data object
+// ============================================================
+class PatientRecord {
+private:
+    string patientId;
+    string firstName;
+    string lastName;
+    string dateOfBirth;
+    string gender;
+    string address;
+    string phone;
+    string email;
+    string nextOfKinName;
+    string nextOfKinPhone;
+    string createdAt;
+
+public:
+    PatientRecord() {}
+
+    PatientRecord(const string& pid, const string& fn, const string& ln,
+                  const string& dob, const string& gen, const string& addr,
+                  const string& ph, const string& em, const string& kinName,
+                  const string& kinPhone, const string& created)
+        : patientId(pid), firstName(fn), lastName(ln),
+          dateOfBirth(dob), gender(gen), address(addr),
+          phone(ph), email(em), nextOfKinName(kinName),
+          nextOfKinPhone(kinPhone), createdAt(created) {}
+
+    // Accessors
+    string getPatientId()     const { return patientId;     }
+    string getFirstName()     const { return firstName;     }
+    string getLastName()      const { return lastName;      }
+    string getDateOfBirth()   const { return dateOfBirth;   }
+    string getGender()        const { return gender;        }
+    string getAddress()       const { return address;       }
+    string getPhone()         const { return phone;         }
+    string getEmail()         const { return email;         }
+    string getNextOfKinName() const { return nextOfKinName; }
+    string getNextOfKinPhone()const { return nextOfKinPhone;}
+    string getCreatedAt()     const { return createdAt;     }
+
+    // Mutators with validation
+    void setPatientId(const string& v)    { if (!v.empty()) patientId = v;    }
+    void setFirstName(const string& v)    { if (!v.empty()) firstName = v;    }
+    void setLastName(const string& v)     { if (!v.empty()) lastName = v;     }
+    void setDateOfBirth(const string& v)  { dateOfBirth = v;                  }
+    void setGender(const string& v)       { gender = v;                       }
+    void setAddress(const string& v)      { address = v;                      }
+    void setPhone(const string& v)        { phone = v;                        }
+    void setEmail(const string& v)        { email = v;                        }
+    void setNextOfKinName(const string& v){ nextOfKinName = v;                }
+    void setNextOfKinPhone(const string& v){ nextOfKinPhone = v;              }
+    void setCreatedAt(const string& v)    { createdAt = v;                    }
+};
+
+// ============================================================
+// AppointmentRecord — CLASS
+// ============================================================
+class AppointmentRecord {
+private:
+    string appointmentId;
+    string patientId;
+    string staffId;
+    string scheduledAt;
+    string status;
+    string purpose;
+    bool   conflictFlagged;
+
+public:
+    AppointmentRecord()
+        : conflictFlagged(false) {}
+
+    AppointmentRecord(const string& aid, const string& pid,
+                      const string& sid, const string& sched,
+                      const string& stat, const string& purp, bool conflict)
+        : appointmentId(aid), patientId(pid), staffId(sid),
+          scheduledAt(sched), status(stat), purpose(purp),
+          conflictFlagged(conflict) {}
+
+    // Accessors
+    string getAppointmentId()  const { return appointmentId;  }
+    string getPatientId()      const { return patientId;      }
+    string getStaffId()        const { return staffId;        }
+    string getScheduledAt()    const { return scheduledAt;    }
+    string getStatus()         const { return status;         }
+    string getPurpose()        const { return purpose;        }
+    bool   getConflictFlagged()const { return conflictFlagged;}
+
+    // Mutators
+    void setAppointmentId(const string& v) { appointmentId  = v; }
+    void setPatientId(const string& v)     { patientId      = v; }
+    void setStaffId(const string& v)       { staffId        = v; }
+    void setScheduledAt(const string& v)   { scheduledAt    = v; }
+    void setStatus(const string& v)        { status         = v; }
+    void setPurpose(const string& v)       { purpose        = v; }
+    void setConflictFlagged(bool v)        { conflictFlagged = v;}
+};
+
+// ============================================================
+// BillingRecord — CLASS
+// ============================================================
+class BillingRecord {
+private:
+    string billingId;
+    string patientId;
+    string appointmentId;
+    double totalAmount;
+    double insuranceCoverage;
+    double deductible;
+    double patientPays;
+    string paymentMethod;
+    string status;
+    string billedAt;
+
+public:
+    BillingRecord()
+        : totalAmount(0), insuranceCoverage(0),
+          deductible(0), patientPays(0) {}
+
+    // Accessors
+    string getBillingId()        const { return billingId;        }
+    string getPatientId()        const { return patientId;        }
+    string getAppointmentId()    const { return appointmentId;    }
+    double getTotalAmount()      const { return totalAmount;      }
+    double getInsuranceCoverage()const { return insuranceCoverage;}
+    double getDeductible()       const { return deductible;       }
+    double getPatientPays()      const { return patientPays;      }
+    string getPaymentMethod()    const { return paymentMethod;    }
+    string getStatus()           const { return status;           }
+    string getBilledAt()         const { return billedAt;         }
+
+    // Mutators with validation
+    void setBillingId(const string& v)     { billingId     = v; }
+    void setPatientId(const string& v)     { patientId     = v; }
+    void setAppointmentId(const string& v) { appointmentId = v; }
+    void setTotalAmount(double v)          { if (v >= 0) totalAmount = v; }
+    void setInsuranceCoverage(double v)    { if (v >= 0 && v <= 1) insuranceCoverage = v; }
+    void setDeductible(double v)           { if (v >= 0) deductible = v; }
+    void setPatientPays(double v)          { if (v >= 0) patientPays = v; }
+    void setPaymentMethod(const string& v) { paymentMethod = v; }
+    void setStatus(const string& v)        { status        = v; }
+    void setBilledAt(const string& v)      { billedAt      = v; }
+};
+
+// ============================================================
+// EHRRecord — CLASS
+// ============================================================
+class EHRRecord {
+private:
+    string ehrId;
+    string patientId;
+    string visitDate;
+    string diagnosis;
+    string prescription;
+    string allergies;
+    string immunizations;
+    string labResultsSummary;
+    string purposeOfProcessing;
+    string recordedBy;
+
+public:
+    EHRRecord() {}
+
+    // Accessors
+    string getEhrId()               const { return ehrId;               }
+    string getPatientId()           const { return patientId;           }
+    string getVisitDate()           const { return visitDate;           }
+    string getDiagnosis()           const { return diagnosis;           }
+    string getPrescription()        const { return prescription;        }
+    string getAllergies()            const { return allergies;           }
+    string getImmunizations()       const { return immunizations;       }
+    string getLabResultsSummary()   const { return labResultsSummary;   }
+    string getPurposeOfProcessing() const { return purposeOfProcessing; }
+    string getRecordedBy()          const { return recordedBy;          }
+
+    // Mutators
+    void setEhrId(const string& v)               { ehrId               = v; }
+    void setPatientId(const string& v)           { patientId           = v; }
+    void setVisitDate(const string& v)           { visitDate           = v; }
+    void setDiagnosis(const string& v)           { diagnosis           = v; }
+    void setPrescription(const string& v)        { prescription        = v; }
+    void setAllergies(const string& v)           { allergies           = v; }
+    void setImmunizations(const string& v)       { immunizations       = v; }
+    void setLabResultsSummary(const string& v)   { labResultsSummary   = v; }
+    void setPurposeOfProcessing(const string& v) { purposeOfProcessing = v; }
+    void setRecordedBy(const string& v)          { recordedBy          = v; }
+};
+
+// ============================================================
+// FileManager — CLASS (Repository pattern)
+// ENCAPSULATION: private file names, public save/load methods
 // Handles all file I/O for the EMHR system
-// ABSTRACTION: hides file format details from business logic
-// ENCAPSULATION: all file names are private constants
 // ============================================================
 class FileManager {
 private:
-    // Private file name constants (encapsulated)
-    const std::string PATIENTS_FILE     = "patients.txt";
-    const std::string APPOINTMENTS_FILE = "appointments.txt";
-    const std::string BILLING_FILE      = "billing.txt";
-    const std::string EHR_FILE          = "ehr_records.txt";
-    const std::string AUDIT_FILE        = "audit_log.txt";
+    const string PATIENTS_FILE     = "patients.txt";
+    const string APPOINTMENTS_FILE = "appointments.txt";
+    const string BILLING_FILE      = "billing.txt";
+    const string EHR_FILE          = "ehr_records.txt";
+    const string AUDIT_FILE        = "audit_log.txt";
+    const char   DELIM             = '|';
 
-    // Delimiter used in flat files
-    const char DELIM = '|';
-
-    // Helper: escape pipes in strings to avoid parsing issues
-    std::string escape(const std::string& s) const {
-        std::string out;
+    string escape(const string& s) const {
+        string out;
         for (char c : s) {
             if (c == '|') out += "\\|";
             else out += c;
@@ -101,305 +234,208 @@ private:
 public:
     FileManager() = default;
 
-    // =============================================
-    // PATIENTS
-    // =============================================
-    void savePatients(const std::vector<PatientRecord>& patients) const {
-        std::ofstream file(PATIENTS_FILE);
+    // ---- PATIENTS ----
+    void savePatients(const vector<PatientRecord>& patients) const {
+        ofstream file(PATIENTS_FILE);
         if (!file.is_open())
-            throw std::runtime_error("Cannot open " + PATIENTS_FILE + " for writing.");
-
+            throw runtime_error("Cannot open " + PATIENTS_FILE);
         for (const auto& p : patients) {
-            file << escape(p.patientId)      << DELIM
-                 << escape(p.firstName)      << DELIM
-                 << escape(p.lastName)       << DELIM
-                 << escape(p.dateOfBirth)    << DELIM
-                 << escape(p.gender)         << DELIM
-                 << escape(p.address)        << DELIM
-                 << escape(p.phone)          << DELIM
-                 << escape(p.email)          << DELIM
-                 << escape(p.nextOfKinName)  << DELIM
-                 << escape(p.nextOfKinPhone) << DELIM
-                 << escape(p.createdAt)      << "\n";
+            file << escape(p.getPatientId())      << DELIM
+                 << escape(p.getFirstName())      << DELIM
+                 << escape(p.getLastName())       << DELIM
+                 << escape(p.getDateOfBirth())    << DELIM
+                 << escape(p.getGender())         << DELIM
+                 << escape(p.getAddress())        << DELIM
+                 << escape(p.getPhone())          << DELIM
+                 << escape(p.getEmail())          << DELIM
+                 << escape(p.getNextOfKinName())  << DELIM
+                 << escape(p.getNextOfKinPhone()) << DELIM
+                 << escape(p.getCreatedAt())      << "\n";
         }
         file.close();
-        std::cout << "[FILE] Saved " << patients.size() << " patient(s) to " << PATIENTS_FILE << "\n";
+        cout << "[FILE] Saved " << patients.size() << " patient(s).\n";
     }
 
-    std::vector<PatientRecord> loadPatients() const {
-        std::vector<PatientRecord> patients;
-        std::ifstream file(PATIENTS_FILE);
+    vector<PatientRecord> loadPatients() const {
+        vector<PatientRecord> patients;
+        ifstream file(PATIENTS_FILE);
         if (!file.is_open()) return patients;
-
-        std::string line;
-        while (std::getline(file, line)) {
+        string line;
+        while (getline(file, line)) {
             if (line.empty()) continue;
-            std::istringstream ss(line);
-            std::vector<std::string> parts;
-            std::string token;
-            while (std::getline(ss, token, DELIM)) parts.push_back(token);
+            istringstream ss(line);
+            vector<string> parts;
+            string token;
+            while (getline(ss, token, DELIM)) parts.push_back(token);
             if (parts.size() < 11) continue;
-
             PatientRecord p;
-            p.patientId      = parts[0];  p.firstName      = parts[1];
-            p.lastName       = parts[2];  p.dateOfBirth    = parts[3];
-            p.gender         = parts[4];  p.address        = parts[5];
-            p.phone          = parts[6];  p.email          = parts[7];
-            p.nextOfKinName  = parts[8];  p.nextOfKinPhone = parts[9];
-            p.createdAt      = parts[10];
+            p.setPatientId(parts[0]);   p.setFirstName(parts[1]);
+            p.setLastName(parts[2]);    p.setDateOfBirth(parts[3]);
+            p.setGender(parts[4]);      p.setAddress(parts[5]);
+            p.setPhone(parts[6]);       p.setEmail(parts[7]);
+            p.setNextOfKinName(parts[8]); p.setNextOfKinPhone(parts[9]);
+            p.setCreatedAt(parts[10]);
             patients.push_back(p);
         }
         file.close();
         return patients;
     }
 
-    // Append a single patient
-    void appendPatient(const PatientRecord& p) const {
-        std::ofstream file(PATIENTS_FILE, std::ios::app);
+    // ---- APPOINTMENTS ----
+    void saveAppointments(const vector<AppointmentRecord>& appts) const {
+        ofstream file(APPOINTMENTS_FILE);
         if (!file.is_open())
-            throw std::runtime_error("Cannot append to " + PATIENTS_FILE);
-        file << escape(p.patientId)      << DELIM
-             << escape(p.firstName)      << DELIM
-             << escape(p.lastName)       << DELIM
-             << escape(p.dateOfBirth)    << DELIM
-             << escape(p.gender)         << DELIM
-             << escape(p.address)        << DELIM
-             << escape(p.phone)          << DELIM
-             << escape(p.email)          << DELIM
-             << escape(p.nextOfKinName)  << DELIM
-             << escape(p.nextOfKinPhone) << DELIM
-             << escape(p.createdAt)      << "\n";
-        file.close();
-    }
-
-    // =============================================
-    // APPOINTMENTS
-    // =============================================
-    void saveAppointments(const std::vector<AppointmentRecord>& appts) const {
-        std::ofstream file(APPOINTMENTS_FILE);
-        if (!file.is_open())
-            throw std::runtime_error("Cannot open " + APPOINTMENTS_FILE);
-
+            throw runtime_error("Cannot open " + APPOINTMENTS_FILE);
         for (const auto& a : appts) {
-            file << escape(a.appointmentId) << DELIM
-                 << escape(a.patientId)     << DELIM
-                 << escape(a.staffId)       << DELIM
-                 << escape(a.scheduledAt)   << DELIM
-                 << escape(a.status)        << DELIM
-                 << escape(a.purpose)       << DELIM
-                 << (a.conflictFlagged ? "1" : "0") << "\n";
+            file << escape(a.getAppointmentId()) << DELIM
+                 << escape(a.getPatientId())     << DELIM
+                 << escape(a.getStaffId())       << DELIM
+                 << escape(a.getScheduledAt())   << DELIM
+                 << escape(a.getStatus())        << DELIM
+                 << escape(a.getPurpose())       << DELIM
+                 << (a.getConflictFlagged() ? "1" : "0") << "\n";
         }
         file.close();
-        std::cout << "[FILE] Saved " << appts.size() << " appointment(s).\n";
+        cout << "[FILE] Saved " << appts.size() << " appointment(s).\n";
     }
 
-    std::vector<AppointmentRecord> loadAppointments() const {
-        std::vector<AppointmentRecord> appts;
-        std::ifstream file(APPOINTMENTS_FILE);
+    vector<AppointmentRecord> loadAppointments() const {
+        vector<AppointmentRecord> appts;
+        ifstream file(APPOINTMENTS_FILE);
         if (!file.is_open()) return appts;
-
-        std::string line;
-        while (std::getline(file, line)) {
+        string line;
+        while (getline(file, line)) {
             if (line.empty()) continue;
-            std::istringstream ss(line);
-            std::vector<std::string> parts;
-            std::string token;
-            while (std::getline(ss, token, DELIM)) parts.push_back(token);
+            istringstream ss(line);
+            vector<string> parts;
+            string token;
+            while (getline(ss, token, DELIM)) parts.push_back(token);
             if (parts.size() < 7) continue;
-
             AppointmentRecord a;
-            a.appointmentId  = parts[0]; a.patientId    = parts[1];
-            a.staffId        = parts[2]; a.scheduledAt  = parts[3];
-            a.status         = parts[4]; a.purpose      = parts[5];
-            a.conflictFlagged = (parts[6] == "1");
+            a.setAppointmentId(parts[0]); a.setPatientId(parts[1]);
+            a.setStaffId(parts[2]);       a.setScheduledAt(parts[3]);
+            a.setStatus(parts[4]);        a.setPurpose(parts[5]);
+            a.setConflictFlagged(parts[6] == "1");
             appts.push_back(a);
         }
         file.close();
         return appts;
     }
 
-    void appendAppointment(const AppointmentRecord& a) const {
-        std::ofstream file(APPOINTMENTS_FILE, std::ios::app);
+    // ---- BILLING ----
+    void saveBilling(const vector<BillingRecord>& bills) const {
+        ofstream file(BILLING_FILE);
         if (!file.is_open())
-            throw std::runtime_error("Cannot append to " + APPOINTMENTS_FILE);
-        file << escape(a.appointmentId) << DELIM
-             << escape(a.patientId)     << DELIM
-             << escape(a.staffId)       << DELIM
-             << escape(a.scheduledAt)   << DELIM
-             << escape(a.status)        << DELIM
-             << escape(a.purpose)       << DELIM
-             << (a.conflictFlagged ? "1" : "0") << "\n";
-        file.close();
-    }
-
-    // =============================================
-    // BILLING
-    // =============================================
-    void saveBilling(const std::vector<BillingRecord>& bills) const {
-        std::ofstream file(BILLING_FILE);
-        if (!file.is_open())
-            throw std::runtime_error("Cannot open " + BILLING_FILE);
-
+            throw runtime_error("Cannot open " + BILLING_FILE);
         for (const auto& b : bills) {
-            file << escape(b.billingId)       << DELIM
-                 << escape(b.patientId)       << DELIM
-                 << escape(b.appointmentId)   << DELIM
-                 << b.totalAmount             << DELIM
-                 << b.insuranceCoverage       << DELIM
-                 << b.deductible              << DELIM
-                 << b.patientPays             << DELIM
-                 << escape(b.paymentMethod)   << DELIM
-                 << escape(b.status)          << DELIM
-                 << escape(b.billedAt)        << "\n";
+            file << escape(b.getBillingId())     << DELIM
+                 << escape(b.getPatientId())     << DELIM
+                 << escape(b.getAppointmentId()) << DELIM
+                 << b.getTotalAmount()           << DELIM
+                 << b.getInsuranceCoverage()     << DELIM
+                 << b.getDeductible()            << DELIM
+                 << b.getPatientPays()           << DELIM
+                 << escape(b.getPaymentMethod()) << DELIM
+                 << escape(b.getStatus())        << DELIM
+                 << escape(b.getBilledAt())      << "\n";
         }
         file.close();
-        std::cout << "[FILE] Saved " << bills.size() << " billing record(s).\n";
+        cout << "[FILE] Saved " << bills.size() << " billing record(s).\n";
     }
 
-    std::vector<BillingRecord> loadBilling() const {
-        std::vector<BillingRecord> bills;
-        std::ifstream file(BILLING_FILE);
+    vector<BillingRecord> loadBilling() const {
+        vector<BillingRecord> bills;
+        ifstream file(BILLING_FILE);
         if (!file.is_open()) return bills;
-
-        std::string line;
-        while (std::getline(file, line)) {
+        string line;
+        while (getline(file, line)) {
             if (line.empty()) continue;
-            std::istringstream ss(line);
-            std::vector<std::string> parts;
-            std::string token;
-            while (std::getline(ss, token, DELIM)) parts.push_back(token);
+            istringstream ss(line);
+            vector<string> parts;
+            string token;
+            while (getline(ss, token, DELIM)) parts.push_back(token);
             if (parts.size() < 10) continue;
-
             BillingRecord b;
-            b.billingId       = parts[0]; b.patientId     = parts[1];
-            b.appointmentId   = parts[2];
-            b.totalAmount     = std::stod(parts[3]);
-            b.insuranceCoverage = std::stod(parts[4]);
-            b.deductible      = std::stod(parts[5]);
-            b.patientPays     = std::stod(parts[6]);
-            b.paymentMethod   = parts[7]; b.status        = parts[8];
-            b.billedAt        = parts[9];
+            b.setBillingId(parts[0]);     b.setPatientId(parts[1]);
+            b.setAppointmentId(parts[2]);
+            b.setTotalAmount(stod(parts[3]));
+            b.setInsuranceCoverage(stod(parts[4]));
+            b.setDeductible(stod(parts[5]));
+            b.setPatientPays(stod(parts[6]));
+            b.setPaymentMethod(parts[7]); b.setStatus(parts[8]);
+            b.setBilledAt(parts[9]);
             bills.push_back(b);
         }
         file.close();
         return bills;
     }
 
-    void appendBilling(const BillingRecord& b) const {
-        std::ofstream file(BILLING_FILE, std::ios::app);
+    // ---- EHR ----
+    void saveEHR(const vector<EHRRecord>& records) const {
+        ofstream file(EHR_FILE);
         if (!file.is_open())
-            throw std::runtime_error("Cannot append to " + BILLING_FILE);
-        file << escape(b.billingId)     << DELIM
-             << escape(b.patientId)     << DELIM
-             << escape(b.appointmentId) << DELIM
-             << b.totalAmount           << DELIM
-             << b.insuranceCoverage     << DELIM
-             << b.deductible            << DELIM
-             << b.patientPays           << DELIM
-             << escape(b.paymentMethod) << DELIM
-             << escape(b.status)        << DELIM
-             << escape(b.billedAt)      << "\n";
-        file.close();
-    }
-
-    // =============================================
-    // EHR RECORDS
-    // =============================================
-    void saveEHR(const std::vector<EHRRecord>& records) const {
-        std::ofstream file(EHR_FILE);
-        if (!file.is_open())
-            throw std::runtime_error("Cannot open " + EHR_FILE);
-
+            throw runtime_error("Cannot open " + EHR_FILE);
         for (const auto& e : records) {
-            file << escape(e.ehrId)                << DELIM
-                 << escape(e.patientId)            << DELIM
-                 << escape(e.visitDate)            << DELIM
-                 << escape(e.diagnosis)            << DELIM
-                 << escape(e.prescription)         << DELIM
-                 << escape(e.allergies)            << DELIM
-                 << escape(e.immunizations)        << DELIM
-                 << escape(e.labResultsSummary)    << DELIM
-                 << escape(e.purposeOfProcessing)  << DELIM
-                 << escape(e.recordedBy)           << "\n";
+            file << escape(e.getEhrId())               << DELIM
+                 << escape(e.getPatientId())           << DELIM
+                 << escape(e.getVisitDate())           << DELIM
+                 << escape(e.getDiagnosis())           << DELIM
+                 << escape(e.getPrescription())        << DELIM
+                 << escape(e.getAllergies())            << DELIM
+                 << escape(e.getImmunizations())       << DELIM
+                 << escape(e.getLabResultsSummary())   << DELIM
+                 << escape(e.getPurposeOfProcessing()) << DELIM
+                 << escape(e.getRecordedBy())          << "\n";
         }
         file.close();
-        std::cout << "[FILE] Saved " << records.size() << " EHR record(s).\n";
+        cout << "[FILE] Saved " << records.size() << " EHR record(s).\n";
     }
 
-    std::vector<EHRRecord> loadEHR() const {
-        std::vector<EHRRecord> records;
-        std::ifstream file(EHR_FILE);
+    vector<EHRRecord> loadEHR() const {
+        vector<EHRRecord> records;
+        ifstream file(EHR_FILE);
         if (!file.is_open()) return records;
-
-        std::string line;
-        while (std::getline(file, line)) {
+        string line;
+        while (getline(file, line)) {
             if (line.empty()) continue;
-            std::istringstream ss(line);
-            std::vector<std::string> parts;
-            std::string token;
-            while (std::getline(ss, token, DELIM)) parts.push_back(token);
+            istringstream ss(line);
+            vector<string> parts;
+            string token;
+            while (getline(ss, token, DELIM)) parts.push_back(token);
             if (parts.size() < 10) continue;
-
             EHRRecord e;
-            e.ehrId               = parts[0]; e.patientId         = parts[1];
-            e.visitDate           = parts[2]; e.diagnosis         = parts[3];
-            e.prescription        = parts[4]; e.allergies         = parts[5];
-            e.immunizations       = parts[6]; e.labResultsSummary = parts[7];
-            e.purposeOfProcessing = parts[8]; e.recordedBy        = parts[9];
+            e.setEhrId(parts[0]);               e.setPatientId(parts[1]);
+            e.setVisitDate(parts[2]);           e.setDiagnosis(parts[3]);
+            e.setPrescription(parts[4]);        e.setAllergies(parts[5]);
+            e.setImmunizations(parts[6]);       e.setLabResultsSummary(parts[7]);
+            e.setPurposeOfProcessing(parts[8]); e.setRecordedBy(parts[9]);
             records.push_back(e);
         }
         file.close();
         return records;
     }
 
-    void appendEHR(const EHRRecord& e) const {
-        std::ofstream file(EHR_FILE, std::ios::app);
-        if (!file.is_open())
-            throw std::runtime_error("Cannot append to " + EHR_FILE);
-        file << escape(e.ehrId)               << DELIM
-             << escape(e.patientId)           << DELIM
-             << escape(e.visitDate)           << DELIM
-             << escape(e.diagnosis)           << DELIM
-             << escape(e.prescription)        << DELIM
-             << escape(e.allergies)           << DELIM
-             << escape(e.immunizations)       << DELIM
-             << escape(e.labResultsSummary)   << DELIM
-             << escape(e.purposeOfProcessing) << DELIM
-             << escape(e.recordedBy)          << "\n";
-        file.close();
-    }
-
-    // =============================================
-    // AUDIT LOG
-    // =============================================
-    void writeAuditLog(const std::string& userId,
-                       const std::string& action,
-                       const std::string& detail,
-                       const std::string& timestamp) const {
-        std::ofstream file(AUDIT_FILE, std::ios::app);
-        if (!file.is_open()) {
-            std::cerr << "[WARN] Cannot write audit log.\n";
-            return;
-        }
+    // ---- AUDIT LOG ----
+    void writeAuditLog(const string& userId, const string& action,
+                       const string& detail, const string& timestamp) const {
+        ofstream file(AUDIT_FILE, ios::app);
+        if (!file.is_open()) { cerr << "[WARN] Cannot write audit log.\n"; return; }
         file << timestamp << DELIM << userId << DELIM
              << action << DELIM << detail << "\n";
         file.close();
     }
 
     void displayAuditLog() const {
-        std::ifstream file(AUDIT_FILE);
-        if (!file.is_open()) {
-            std::cout << "[AUDIT] No audit log found.\n";
-            return;
-        }
-        std::cout << "\n===== AUDIT LOG =====\n";
-        std::string line;
-        while (std::getline(file, line)) {
-            if (!line.empty()) std::cout << "  " << line << "\n";
-        }
-        std::cout << "=====================\n";
+        ifstream file(AUDIT_FILE);
+        if (!file.is_open()) { cout << "[AUDIT] No audit log found.\n"; return; }
+        cout << "\n===== AUDIT LOG =====\n";
+        string line;
+        while (getline(file, line))
+            if (!line.empty()) cout << "  " << line << "\n";
+        cout << "=====================\n";
         file.close();
     }
 };
 
 #endif // FILE_MANAGER_H
+
