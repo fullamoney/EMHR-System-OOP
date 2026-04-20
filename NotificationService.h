@@ -1,6 +1,7 @@
 // ============================================================
 // File: NotificationService.h
-// Description: Abstract base class for notification services
+// Description: Abstract base class for notification services,
+//              Observer pattern interfaces
 // Project: EMHR Healthcare System - Semester 2 AY2025/2026
 // ============================================================
 
@@ -11,45 +12,55 @@
 #include <vector>
 #include <iostream>
 
-// ---- Abstract base: NotificationService ----
-// Demonstrates ABSTRACTION - defines interface without implementation
+using namespace std;
+
+// ============================================================
+// Abstract base class: NotificationService
+// Demonstrates ABSTRACTION - pure virtual method forces
+// every subclass to implement sendNotification()
+// ============================================================
 class NotificationService {
 protected:
-    std::string serviceName;
+    string serviceName;
 
 public:
-    NotificationService(const std::string& name) : serviceName(name) {}
+    NotificationService(const string& name) : serviceName(name) {}
     virtual ~NotificationService() {}
 
-    // Pure virtual - forces subclasses to implement
-    virtual void sendNotification(const std::string& recipient,
-                                  const std::string& subject,
-                                  const std::string& message) = 0;
+    // Pure virtual method - ABSTRACTION
+    virtual void sendNotification(const string& recipient,
+                                  const string& subject,
+                                  const string& message) = 0;
 
-    virtual std::string getServiceName() const { return serviceName; }
+    virtual string getServiceName() const { return serviceName; }
 
-    // Concrete helper shared by all subclasses
-    void logNotification(const std::string& recipient, const std::string& subject) const {
-        std::cout << "[LOG][" << serviceName << "] Notification sent to: "
-                  << recipient << " | Subject: " << subject << "\n";
+    // Shared helper available to all subclasses
+    void logNotification(const string& recipient,
+                         const string& subject) const {
+        cout << "[LOG][" << serviceName << "] Notification sent to: "
+             << recipient << " | Subject: " << subject << "\n";
     }
 };
 
-// ---- Observer interface ----
-// Part of Observer pattern: observers react to system events
+// ============================================================
+// Observer interface (abstract)
+// Part of Observer pattern - all observers must implement onEvent
+// ============================================================
 class NotificationObserver {
 public:
     virtual ~NotificationObserver() {}
-    virtual void onEvent(const std::string& eventType,
-                         const std::string& recipient,
-                         const std::string& details) = 0;
+    virtual void onEvent(const string& eventType,
+                         const string& recipient,
+                         const string& details) = 0;
 };
 
-// ---- Subject (Publisher) ----
-// Holds a list of observers and notifies them on events
+// ============================================================
+// NotificationSubject (Publisher)
+// Holds list of observers and notifies them on system events
+// ============================================================
 class NotificationSubject {
 private:
-    std::vector<NotificationObserver*> observers;
+    vector<NotificationObserver*> observers;
 
 public:
     void addObserver(NotificationObserver* obs) {
@@ -62,10 +73,9 @@ public:
         }
     }
 
-    // Notify all registered observers
-    void notifyObservers(const std::string& eventType,
-                         const std::string& recipient,
-                         const std::string& details) {
+    void notifyObservers(const string& eventType,
+                         const string& recipient,
+                         const string& details) {
         for (auto* obs : observers) {
             obs->onEvent(eventType, recipient, details);
         }
